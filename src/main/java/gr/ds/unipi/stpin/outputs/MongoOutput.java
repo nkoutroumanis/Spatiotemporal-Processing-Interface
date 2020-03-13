@@ -1,6 +1,5 @@
 package gr.ds.unipi.stpin.outputs;
 
-import gr.ds.unipi.stpin.outputs.MongoDbConnector;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;

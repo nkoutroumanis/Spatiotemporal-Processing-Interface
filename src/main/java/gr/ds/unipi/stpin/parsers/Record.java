@@ -26,7 +26,6 @@ public class Record {
         if (fieldNames != null) {
             this.fieldNames = new ArrayList<>(Arrays.asList(fieldNames));
         }
-
     }
 
     public String getMetadata() {
@@ -34,11 +33,11 @@ public class Record {
     }
 
     public List<String> getFieldNames() {
-        return fieldNames;//fieldNames.toArray(new String[0]);
+        return fieldNames;
     }
 
     public List<Object> getFieldValues() {
-        return fieldValues;//fieldValues.toArray(new String[0]);
+        return fieldValues;
     }
 
     public void addFieldValues(List<Object> newFieldValues) {

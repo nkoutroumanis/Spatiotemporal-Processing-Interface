@@ -62,7 +62,6 @@ public final class FileOutput implements Output<String> {
             try {
 
                 logger.info("Create directory on {}", getDirectory() + lineMetaData.substring(0, lineMetaData.lastIndexOf(File.separator) + 1));
-                //System.out.println("create directory on " + );
                 Files.createDirectories(Paths.get(getDirectory() + lineMetaData.substring(0, lineMetaData.lastIndexOf(File.separator) + 1)));
 
                 fos = new FileOutputStream(getDirectory() + lineMetaData, true);
@@ -72,7 +71,7 @@ public final class FileOutput implements Output<String> {
 
                 filePath = lineMetaData;
 
-                System.out.println("lineWithMeta meta:" + getDirectory());
+                logger.info("lineWithMeta meta:", getDirectory());
 
             } catch (FileNotFoundException e) {
                 e.printStackTrace();

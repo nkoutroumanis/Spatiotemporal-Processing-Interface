@@ -38,7 +38,7 @@ public class FileDatasource implements Datasource {
         Path path = filesIter.next();
         filePath = path.toString();
 
-        System.out.println("File opened {}"+filePath);
+        logger.info("File opened {}", filePath);
 
         linesStream = Files.lines(path);
         linesIter = linesStream.iterator();
@@ -64,7 +64,7 @@ public class FileDatasource implements Datasource {
                 Path path = filesIter.next();
                 filePath = path.toString();
 
-                System.out.println("File opened {}"+ filePath);
+                logger.info("File opened {}", filePath);
 
                 linesStream = Files.lines(path);
                 linesIter = linesStream.iterator();

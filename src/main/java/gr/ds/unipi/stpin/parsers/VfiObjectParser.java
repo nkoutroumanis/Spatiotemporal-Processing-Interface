@@ -1,9 +1,9 @@
 package gr.ds.unipi.stpin.parsers;
 
-import gr.ds.unipi.stpin.datasources.Datasource;
-import gr.ds.unipi.stpin.parsers.util.VfiMapPoint;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import gr.ds.unipi.stpin.datasources.Datasource;
+import gr.ds.unipi.stpin.parsers.util.VfiMapPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

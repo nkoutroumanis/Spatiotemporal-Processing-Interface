@@ -1,11 +1,10 @@
 package gr.ds.unipi.stpin;
 
-import com.typesafe.config.*;
-import org.bson.Document;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValue;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
