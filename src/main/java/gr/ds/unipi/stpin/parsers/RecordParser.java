@@ -24,6 +24,7 @@ public abstract class RecordParser {
     protected Datasource source;
     protected String[] lineWithMeta;
     protected final String dateFormat;
+    private static DateFormat dateFormatPattern;
 
     public RecordParser(Datasource source, String dateFormat) {
         this.source = source;
@@ -126,23 +127,31 @@ public abstract class RecordParser {
 
     public abstract RecordParser cloneRecordParser(Datasource datasource);
 
-    public static Function<Record, Date> dateFunction(RecordParser recordParser){
-
-        if(recordParser.getDateFormat().equals("unixTimestamp")){
-            return (record) -> new Date(Long.valueOf(recordParser.getDate(record)));
-        }
-        else{
-            DateFormat dateFormat = new SimpleDateFormat(recordParser.getDateFormat());
-            return (record) -> {
-                Date d = null;
-                try {
-                    d = dateFormat.parse(recordParser.getDate(record));
-                } catch (ParseException e) {
-                    logger.warn("Temporal information of record can not be parsed {} \nLine {}", e, record.getMetadata());
-                }
-                return d;
-            };
-        }
+    public static Function<Record, Date> dateFunctionUnixTimestampSec(RecordParser recordParser){
+         return (record) -> new Date(Long.parseLong(recordParser.getDate(record)) * 1000l);
     }
 
+    public static Function<Record, Date> dateFunctionUnixTimestampMillis(RecordParser recordParser){
+        return (record) -> new Date(Long.parseLong(recordParser.getDate(record)));
+    }
+
+    public static Function<Record, Date> dateFunctionUnixTimestampDecimals(RecordParser recordParser){
+         return (record) -> new Date((long) (Double.parseDouble(recordParser.getDate(record)) * 1000d));
+    }
+
+    public void setSimpleDateFormat(){
+        dateFormatPattern = new SimpleDateFormat(getDateFormat());
+    }
+
+    public static Function<Record, Date> dateFunctionDateFormatPattern(RecordParser recordParser){
+         return (record) -> {
+             Date d = null;
+             try {
+                 d = dateFormatPattern.parse(recordParser.getDate(record));
+             } catch (ParseException e) {
+                 logger.warn("Temporal information of record can not be parsed {} \nLine {}", e, record.getMetadata());
+             }
+             return d;
+         };
+    }
 }
