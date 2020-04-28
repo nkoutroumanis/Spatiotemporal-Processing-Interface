@@ -140,7 +140,12 @@ public abstract class RecordParser {
     }
 
     public void setSimpleDateFormat(){
-        dateFormatPattern = new SimpleDateFormat(getDateFormat());
+        try{
+            dateFormatPattern = new SimpleDateFormat(getDateFormat());
+        }
+        catch (Exception e){
+            logger.error("Date Format has not been set correctly");
+        }
     }
 
     public static Function<Record, Date> dateFunctionDateFormatPattern(RecordParser recordParser){
