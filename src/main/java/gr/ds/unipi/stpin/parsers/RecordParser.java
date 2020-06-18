@@ -127,19 +127,37 @@ public abstract class RecordParser {
 
     public abstract RecordParser cloneRecordParser(Datasource datasource);
 
-    public static Function<Record, Date> dateFunctionUnixTimestampSec(RecordParser recordParser){
-         return (record) -> new Date(Long.parseLong(recordParser.getDate(record)) * 1000l);
+    public Function<Record,Date> getDateFunction(){
+
+        if(getDateFormat().equals("unixTimestampSec")){
+            return dateFunctionUnixTimestampSec();
+        }
+        else if(getDateFormat().equals("unixTimestampMillis")){
+            return dateFunctionUnixTimestampMillis();
+        }
+        else if(getDateFormat().equals("unixTimestampDecimals")){
+            return dateFunctionUnixTimestampDecimals();
+        }
+        else{
+            setSimpleDateFormat();
+            return dateFunctionDateFormatPattern();
+        }
+
     }
 
-    public static Function<Record, Date> dateFunctionUnixTimestampMillis(RecordParser recordParser){
-        return (record) -> new Date(Long.parseLong(recordParser.getDate(record)));
+    private Function<Record, Date> dateFunctionUnixTimestampSec(){
+         return (record) -> new Date(Long.parseLong(getDate(record)) * 1000l);
     }
 
-    public static Function<Record, Date> dateFunctionUnixTimestampDecimals(RecordParser recordParser){
-         return (record) -> new Date((long) (Double.parseDouble(recordParser.getDate(record)) * 1000d));
+    private Function<Record, Date> dateFunctionUnixTimestampMillis(){
+        return (record) -> new Date(Long.parseLong(getDate(record)));
     }
 
-    public void setSimpleDateFormat(){
+    private Function<Record, Date> dateFunctionUnixTimestampDecimals(){
+         return (record) -> new Date((long) (Double.parseDouble(getDate(record)) * 1000d));
+    }
+
+    private void setSimpleDateFormat(){
         try{
             dateFormatPattern = new SimpleDateFormat(getDateFormat());
         }
@@ -148,11 +166,11 @@ public abstract class RecordParser {
         }
     }
 
-    public static Function<Record, Date> dateFunctionDateFormatPattern(RecordParser recordParser){
+    private Function<Record, Date> dateFunctionDateFormatPattern(){
          return (record) -> {
              Date d = null;
              try {
-                 d = dateFormatPattern.parse(recordParser.getDate(record));
+                 d = dateFormatPattern.parse(getDate(record));
              } catch (ParseException e) {
                  logger.warn("Temporal information of record can not be parsed {} \nLine {}", e, record.getMetadata());
              }

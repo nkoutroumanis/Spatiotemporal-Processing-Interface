@@ -22,6 +22,8 @@ public class KafkaDatasource implements Datasource {
     private final long poll;
     private Iterator<ConsumerRecord<String, String>> consumerIter;
 
+    private final boolean runForEver;
+
     private KafkaDatasource(String propertiesFile, String topicName, long poll) throws IOException {
         this.propertiesFile = propertiesFile;
         this.topicName = topicName;
@@ -35,6 +37,7 @@ public class KafkaDatasource implements Datasource {
         consumer.subscribe(Arrays.asList(topicName));
 
         this.consumerIter = consumer.poll(Duration.ofMillis(poll)).iterator();
+        runForEver = Boolean.parseBoolean(props.getProperty("runForEver"));
 
     }
 
@@ -55,7 +58,9 @@ public class KafkaDatasource implements Datasource {
             return true;
         } else {
 
-            this.consumerIter = consumer.poll(Duration.ofMillis(poll)).iterator();
+            do{
+                this.consumerIter = consumer.poll(Duration.ofMillis(poll)).iterator();
+            }while((!consumerIter.hasNext()) && runForEver);
 
             if (consumerIter.hasNext()) {
                 buffer++;
