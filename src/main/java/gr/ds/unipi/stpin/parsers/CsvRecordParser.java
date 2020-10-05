@@ -17,12 +17,7 @@ public class CsvRecordParser extends RecordParser {
 
     private final String separator;
     private String[] headers;
-
-//    public CsvRecordParser(String separator, String header, Datasource source) {
-//        super(source);
-//        this.separator = separator;
-//        this.headers = header.split(separator);
-//    }
+    private String[] types;
 
     public CsvRecordParser(Datasource source, String separator, String headers, int vehicleFieldId, int longitudeFieldId, int latitudeFieldId, int dateFieldId, String dateFormat) {
         super(source, dateFormat);
@@ -70,37 +65,29 @@ public class CsvRecordParser extends RecordParser {
             logger.error("Line has {} fields but {} fields are expected!\nLine: {}", fieldValues.length, headers.length, lineWithMeta[0]);
             throw new ParseException("Wrong input!", 0);
         }
+
+        if(types != null){
+            if(types.length != fieldValues.length){
+                logger.error("The number of field values do not match with the number of types");
+                throw new ParseException("Wrong input!",0);
+            }
+            Object[] fieldValuesWithType = new Object[fieldValues.length];
+            for (int i = 0; i < fieldValues.length; i++) {
+                if(types[i].equals("s")){
+                    fieldValuesWithType[i] = fieldValues[i];
+                }
+                else if(types.equals("n")){
+                    fieldValuesWithType[i] = Double.parseDouble(fieldValues[i]);
+                }
+                else{
+                    logger.error("A value is neither string nor number");
+                    throw new ParseException("Wrong input!",0);
+                }
+            }
+            return new Record(fieldValuesWithType, lineWithMeta[1], headers);
+        }
         return new Record(fieldValues, lineWithMeta[1], headers);
     }
-
-//    @Override
-//    public Document toDocument(Record record) {
-//        //String[] fieldNames = record.getFieldNames();
-//        //String[] fieldValues = record.getFieldValues();
-//
-//        if ((record.getFieldNames() == null) || (record.getFieldNames().size() != record.getFieldValues().size())) {
-//            logger.error("Field names is wrong!");
-//            return null;
-//        }
-//
-//        Document result = new Document();
-//        for (int i = 0; i < record.getFieldValues().size(); i++) {
-//            if (i == vehicleFieldId) {
-//                result.append(vehicleFieldName, record.getFieldValues().get(i));
-//            } else if (i == dateFieldId) {
-//                result.append(dateFieldName, record.getFieldValues().get(i));
-//            } else if ((i != longitudeFieldId) && (i != latitudeFieldId)) {
-//                result.append(record.getFieldNames().get(i), record.getFieldValues().get(i));
-//            }
-//        }
-//        double longitude = Double.parseDouble(record.getFieldValues().get(longitudeFieldId));
-//        double latitude = Double.parseDouble(record.getFieldValues().get(latitudeFieldId));
-//        Document embeddedDoc = Consts.getPointDocument().append(
-//                coordinatesFieldName, Arrays.asList(longitude, latitude)
-//        );
-//        result.append(locationFieldName, embeddedDoc);
-//        return result;
-//    }
 
     @Override
     public String getLatitude(Record record) {
