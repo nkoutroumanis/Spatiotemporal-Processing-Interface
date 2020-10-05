@@ -61,7 +61,7 @@ public class RedisOutput implements Output<Record> {
                 }
             }
         }
-        pipeline.sadd("primaryKey",primaryKey);
+        pipeline.sadd(database+":"+"primaryKeys",primaryKey);
         pipeline.hset(primaryKey, map);
 
         count++;
