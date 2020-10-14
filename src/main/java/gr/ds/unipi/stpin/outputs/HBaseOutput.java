@@ -23,7 +23,7 @@ public class HBaseOutput implements Output<Record> {
     private int count = 0;
     private List<Put> putList = new ArrayList<>();
 
-    public HBaseOutput(String host, int port, String table, int batchSize) throws IOException {
+    public HBaseOutput(String host, String table, int batchSize) throws IOException {
         this.connection =  HBaseConnector.newHBaseConnector(host).getConnection();
         this.table = connection.getTable(TableName.valueOf(table));
         this.batchSize = batchSize;
