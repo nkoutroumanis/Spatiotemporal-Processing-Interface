@@ -16,7 +16,6 @@ public class Record {
     private String metadata;
 
     private Record(Object[] fieldValues, String metadata) {
-
         this.fieldValues = new ArrayList<>(Arrays.asList(fieldValues));
         this.metadata = metadata;
     }

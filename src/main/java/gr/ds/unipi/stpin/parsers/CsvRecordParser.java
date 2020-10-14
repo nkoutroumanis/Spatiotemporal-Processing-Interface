@@ -71,12 +71,14 @@ public class CsvRecordParser extends RecordParser {
                 logger.error("The number of field values do not match with the number of types");
                 throw new ParseException("Wrong input!",0);
             }
+            fieldValues[dateFieldId-1] = fieldValues[dateFieldId-1];
             Object[] fieldValuesWithType = new Object[fieldValues.length];
             for (int i = 0; i < fieldValues.length; i++) {
+
                 if(types[i].equals("s")){
                     fieldValuesWithType[i] = fieldValues[i];
                 }
-                else if(types.equals("n")){
+                else if(types[i].equals("n")){
                     fieldValuesWithType[i] = Double.parseDouble(fieldValues[i]);
                 }
                 else{
@@ -91,17 +93,21 @@ public class CsvRecordParser extends RecordParser {
 
     @Override
     public String getLatitude(Record record) {
-        return (String) record.getFieldValues().get(latitudeFieldId - 1);
+        return String.valueOf(record.getFieldValues().get(latitudeFieldId - 1));
     }
 
     @Override
     public String getLongitude(Record record) {
-        return (String) record.getFieldValues().get(longitudeFieldId - 1);
+        return  String.valueOf(record.getFieldValues().get(longitudeFieldId - 1));
     }
 
     @Override
     public String getDate(Record record) {
-        return (String) record.getFieldValues().get(dateFieldId - 1);
+        return String.valueOf(record.getFieldValues().get(dateFieldId - 1));
+    }
+
+    public int getDateIndex() {
+        return (dateFieldId - 1);
     }
 
     @Override
