@@ -1,6 +1,6 @@
 package gr.ds.unipi.stpin.outputs;
 
-import com.mongodb.MongoClient;
+import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.slf4j.Logger;

@@ -1,9 +1,13 @@
 package gr.ds.unipi.stpin.outputs;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 final class MongoDbConnector {
 
@@ -12,8 +16,12 @@ final class MongoDbConnector {
 
     private MongoDbConnector(String host, int port, String database, String username, String password) {
         MongoCredential credential = MongoCredential.createCredential(username, "admin", password.toCharArray());//admin for global
-        MongoClientOptions options = MongoClientOptions.builder().maxConnectionIdleTime(90000)/*.sslEnabled(true)*/.build();
-        mongoClient = new MongoClient(new ServerAddress(host, port), credential, options);
+
+        MongoClientSettings clientSettings = MongoClientSettings.builder().credential(credential).applyToClusterSettings(builder ->
+                builder.hosts(Arrays.asList(new ServerAddress(host, port))))
+                .applyToConnectionPoolSettings(builder -> builder.maxConnectionIdleTime(90000, TimeUnit.SECONDS)).build();
+
+        mongoClient = MongoClients.create(clientSettings);
 
         this.database = database;
     }
