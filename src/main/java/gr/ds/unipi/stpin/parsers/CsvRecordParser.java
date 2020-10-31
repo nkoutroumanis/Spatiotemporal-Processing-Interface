@@ -76,10 +76,31 @@ public class CsvRecordParser extends RecordParser {
             for (int i = 0; i < fieldValues.length; i++) {
 
                 if(types[i].equals("s")){
-                    fieldValuesWithType[i] = fieldValues[i];
+
+                    if(fieldValues[i].equalsIgnoreCase("null")){
+                        fieldValuesWithType[i] = null;
+                    }else{
+                        fieldValuesWithType[i] = fieldValues[i];
+                    }
+
                 }
                 else if(types[i].equals("n")){
-                    fieldValuesWithType[i] = Double.parseDouble(fieldValues[i]);
+
+                    if(fieldValues[i].equalsIgnoreCase("null")){
+                        fieldValuesWithType[i] = null;
+                    }
+                    else if(fieldValues[i].trim().isEmpty()){
+                        fieldValuesWithType[i] = "";
+                    }
+                    else{
+                        try{
+                            fieldValuesWithType[i] = Double.parseDouble(fieldValues[i]);
+                        }
+                        catch (NumberFormatException e){
+                            logger.error("A declared double type cannot be parsed. Column's number is {}", i+1);
+
+                        }
+                    }
                 }
                 else{
                     logger.error("A value is neither string nor number");
