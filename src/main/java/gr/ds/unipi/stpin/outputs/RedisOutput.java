@@ -53,6 +53,10 @@ public class RedisOutput implements Output<Record> {
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
                 pipeline.zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
             }
+            else if(fieldValues.get(i)==null){
+                map.put(fieldNames.get(i),"Null");
+                pipeline.sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
+            }
             else{
                 try {
                     throw new Exception("");
