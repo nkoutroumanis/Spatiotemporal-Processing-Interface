@@ -8,7 +8,7 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 
 import java.util.*;
 
-public class RedisClusterOutput implements Output<Record> {
+public class RedisClusterOutput implements RedisOutput {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisClusterOutput.class);
     private final int batchSize;
