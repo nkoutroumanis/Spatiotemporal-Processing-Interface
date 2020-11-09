@@ -1,5 +1,6 @@
 package gr.ds.unipi.stpin.outputs;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
@@ -10,7 +11,7 @@ public class RedisClusterConnector {
     private final JedisCluster jedisCluster;
 
     private RedisClusterConnector(Set<HostAndPort> nodes) {
-        this.jedisCluster = new JedisCluster (nodes);
+        this.jedisCluster = new JedisCluster (nodes,0);
     }
 
     public static RedisClusterConnector newRedisClusterConnector(Set<HostAndPort> nodes) {

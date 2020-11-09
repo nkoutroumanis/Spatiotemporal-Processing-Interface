@@ -32,10 +32,9 @@ public class RedisClusterOutput implements RedisOutput {
         this.batchSize = batchSize;
         this.database = database;
 
-
         nodeMap = jedisCluster.getClusterNodes();
 
-        String anyHost = nodeMap.keySet ().iterator().next();
+        String anyHost = nodeMap.keySet().iterator().next();
 
         // getSlotHostMap method has below
 
@@ -47,19 +46,21 @@ public class RedisClusterOutput implements RedisOutput {
 
         // Get slot number
 
-        int slot = JedisClusterCRC16.getSlot (key);
+        int slot = JedisClusterCRC16.getSlot(key);
 
         // Get the corresponding Jedis object
 
-        Map.Entry <Long, String> entry = slotHostMap.lowerEntry (Long.valueOf (slot));
+        Map.Entry <Long, String> entry = slotHostMap.lowerEntry(Long.valueOf(slot));
 
-        Jedis jedis = nodeMap.get(entry.getValue()).getResource();
+        if(entry == null){//if slot is 0
+            entry = slotHostMap.lowerEntry(Long.valueOf(slot+1));
+        }
 
         if(jedises.containsKey(entry.getValue())){
             return pipelines.get(entry.getValue());
         }
         else{
-            jedises.put(entry.getValue(), nodeMap.get (entry.getValue ()).getResource());
+            jedises.put(entry.getValue(), nodeMap.get(entry.getValue()).getResource());
             pipelines.put(entry.getValue(), jedises.get(entry.getValue()).pipelined());
             return pipelines.get(entry.getValue());
         }
@@ -77,22 +78,25 @@ public class RedisClusterOutput implements RedisOutput {
 
         for (int i = 0; i < fieldNames.size(); i++) {
 
+            if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
+                continue;
+            }
+
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
-
+                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)).sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
+                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)).sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
             }
             else if(fieldValues.get(i) instanceof Date){
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
-                getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
             }
             else if(fieldValues.get(i)==null){
                 map.put(fieldNames.get(i),"Null");
-                getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+"Null").sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
+                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+"Null").sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
             }
             else{
                 try {
@@ -104,6 +108,7 @@ public class RedisClusterOutput implements RedisOutput {
         }
         getPipelineBasedOnKey(database+":"+"primaryKeys").sadd(database+":"+"primaryKeys",primaryKey);
         getPipelineBasedOnKey(primaryKey).hset(primaryKey, map);
+//        getPipelineBasedOnKey(primaryKey).geoadd("geo", "","","",);
 
         count++;
         if(count==batchSize){
