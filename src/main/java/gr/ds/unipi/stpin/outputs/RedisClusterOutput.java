@@ -88,25 +88,25 @@ public class RedisClusterOutput implements RedisOutput {
 
         for (int i = 0; i < fieldNames.size(); i++) {
 
-            if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
-                continue;
-            }
+//            if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
+//                continue;
+//            }
 
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
+                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)fieldValues.get(i),primaryKey);
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)).sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
+                pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
             }
             else if(fieldValues.get(i) instanceof Date){
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
-                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)).zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
             }
             else if(fieldValues.get(i)==null){
                 map.put(fieldNames.get(i),"Null");
-                //getPipelineBasedOnKey(database+":"+fieldNames.get(i)+":"+"Null").sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
+                pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+"Null"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
             }
             else{
                 try {
@@ -141,10 +141,10 @@ public class RedisClusterOutput implements RedisOutput {
 
 //        pipelines.forEach((s,p)->p.sync());
 ////        pipelines.forEach((s,p)->p.close());
+        pipelinesOfNodes.forEach(e->e.getValue().sync());
 
         nodeMap.forEach((s,j)->j.close());
 
-        pipelinesOfNodes.forEach(e->e.getValue().sync());
         pipelinesOfNodes.forEach(e->e.getValue().close());
 
         //jedises.forEach((i,j)->j.close());
