@@ -82,31 +82,48 @@ public class RedisClusterOutput implements RedisOutput {
         List<String> fieldNames = record.getFieldNames();
         List<Object> fieldValues = record.getFieldValues();
 
-        String primaryKey = lineMetaData+pipelinesOfNodes.get(indexOfPipeline).getKey();
+        String primaryKey = RandomGenerator.randomCharacterNumericString()+pipelinesOfNodes.get(indexOfPipeline).getKey();
+
+        //String primaryKey = lineMetaData+pipelinesOfNodes.get(indexOfPipeline).getKey();
 
         Map<String,String> map = new HashMap<>();
 
+        //for baseline
+//        double longitude =0;
+//        double latitude =0;
+
         for (int i = 0; i < fieldNames.size(); i++) {
 
-//            if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
-//                continue;
-//            }
+            if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
+                continue;
+            }
 
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)fieldValues.get(i),primaryKey);
+                //pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)fieldValues.get(i),primaryKey);
+
+                //for baseline
+//                if(fieldNames.get(i).equals("longitude")){
+//                    longitude = (double) fieldValues.get(i);
+//                }
+//                else{
+//                    latitude = (double) fieldValues.get(i);
+//                }
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
             }
             else if(fieldValues.get(i) instanceof Date){
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
-                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                //pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+
+                //for baseline
+//                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"localDate"+pipelinesOfNodes.get(indexOfPipeline).getKey(), ((Date) fieldValues.get(i)).getTime(), primaryKey);
             }
             else if(fieldValues.get(i)==null){
                 map.put(fieldNames.get(i),"Null");
-                pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+"Null"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+"Null"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
             }
             else{
                 try {
@@ -116,9 +133,13 @@ public class RedisClusterOutput implements RedisOutput {
                 }
             }
         }
+
+        //for baseline
+        //pipelinesOfNodes.get(indexOfPipeline).getValue().geoadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),longitude,latitude, primaryKey);
+
+        pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"primaryKeys"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().hset(primaryKey, map);
-
 
         count++;
         if(count==batchSize){
