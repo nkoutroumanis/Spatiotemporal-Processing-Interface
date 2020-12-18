@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class HBaseOutput implements Output<Record> {
@@ -49,7 +51,10 @@ public class HBaseOutput implements Output<Record> {
                 put.addColumn(Bytes.toBytes(cols[0]),Bytes.toBytes(cols[1]),Bytes.toBytes( (String) fieldValues.get(i)));
             }
             else if(fieldValues.get(i) instanceof Date){
-                put.addColumn(Bytes.toBytes(cols[0]),Bytes.toBytes(cols[1]),Bytes.toBytes( (long) fieldValues.get(i)));
+                put.addColumn(Bytes.toBytes(cols[0]),Bytes.toBytes(cols[1]),Bytes.toBytes(((Date) fieldValues.get(i)).getTime()));
+            }
+            else if(fieldValues.get(i)==null){
+                put.addColumn(Bytes.toBytes(cols[0]),Bytes.toBytes(cols[1]),null);
             }
             else{
                 try {

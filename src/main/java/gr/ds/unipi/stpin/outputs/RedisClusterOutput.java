@@ -137,7 +137,9 @@ public class RedisClusterOutput implements RedisOutput {
         //for baseline
         //pipelinesOfNodes.get(indexOfPipeline).getValue().geoadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),longitude,latitude, primaryKey);
 
-        pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
+        //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
+
+        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:localDate"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData), primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"primaryKeys"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().hset(primaryKey, map);
 
@@ -193,25 +195,25 @@ public class RedisClusterOutput implements RedisOutput {
 //        }
 //        return tree;
 //    }
-private static List<Map.Entry<Long, String>> getSlotHostMap (String anyHostAndPortStr) {
-    List<Map.Entry<Long, String>> entries = new ArrayList<>();
-    String parts [] = anyHostAndPortStr.split (":");
-    HostAndPort anyHostAndPort = new HostAndPort(parts [0], Integer.parseInt (parts [1]));
-    try {
-        Jedis jedis = new Jedis (anyHostAndPort.getHost (), anyHostAndPort.getPort ());
-        List <Object> list = jedis.clusterSlots ();
-        for (Object object: list) {
-            List <Object> list1 = (List <Object>) object;
-            List <Object> master = (List <Object>) list1.get (2);
-            String hostAndPort = new String ((byte []) master.get (0)) + ":" + master.get (1);
-            entries.add(new AbstractMap.SimpleImmutableEntry<>((Long) list1.get (0), hostAndPort));
-        }
-        jedis.close ();
-    } catch (Exception e) {
+    private static List<Map.Entry<Long, String>> getSlotHostMap (String anyHostAndPortStr) {
+        List<Map.Entry<Long, String>> entries = new ArrayList<>();
+        String parts [] = anyHostAndPortStr.split (":");
+        HostAndPort anyHostAndPort = new HostAndPort(parts [0], Integer.parseInt (parts [1]));
+        try {
+            Jedis jedis = new Jedis (anyHostAndPort.getHost (), anyHostAndPort.getPort ());
+            List <Object> list = jedis.clusterSlots ();
+            for (Object object: list) {
+                List <Object> list1 = (List <Object>) object;
+                List <Object> master = (List <Object>) list1.get (2);
+                String hostAndPort = new String ((byte []) master.get (0)) + ":" + master.get (1);
+                entries.add(new AbstractMap.SimpleImmutableEntry<>((Long) list1.get (0), hostAndPort));
+            }
+            jedis.close ();
+        } catch (Exception e) {
 
+        }
+        return entries;
     }
-    return entries;
-}
 
     private static List<String> crc16Slot = new BufferedReader(new InputStreamReader(RedisConnector.class.getResourceAsStream("/codes.txt"))).lines().collect(Collectors.toList());
 
