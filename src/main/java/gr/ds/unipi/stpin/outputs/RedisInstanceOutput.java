@@ -34,7 +34,7 @@ public class RedisInstanceOutput implements RedisOutput {
         List<String> fieldNames = record.getFieldNames();
         List<Object> fieldValues = record.getFieldValues();
 
-        String primaryKey = lineMetaData;
+        String primaryKey = RandomGenerator.randomCharacterNumericString();
 
         Map<String,String> map = new HashMap<>();
 
@@ -43,7 +43,6 @@ public class RedisInstanceOutput implements RedisOutput {
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
                 pipeline.zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
-
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
@@ -65,6 +64,9 @@ public class RedisInstanceOutput implements RedisOutput {
                 }
             }
         }
+
+        pipeline.zadd(database+":"+"location:localDate",Long.valueOf(lineMetaData), primaryKey);
+
         pipeline.sadd(database+":"+"primaryKeys",primaryKey);
         pipeline.hset(primaryKey, map);
 
@@ -75,7 +77,6 @@ public class RedisInstanceOutput implements RedisOutput {
             logger.debug("Done!");
             count=0;
         }
-
     }
 
     @Override
