@@ -38,6 +38,8 @@ public class RedisInstanceOutput implements RedisOutput {
 
         Map<String,String> map = new HashMap<>();
 
+        String dateFieldName = "";
+
         for (int i = 0; i < fieldNames.size(); i++) {
 
             if(fieldValues.get(i) instanceof Number){
@@ -49,6 +51,7 @@ public class RedisInstanceOutput implements RedisOutput {
                 pipeline.sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
             }
             else if(fieldValues.get(i) instanceof Date){
+                dateFieldName = fieldNames.get(i);
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
                 pipeline.zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
             }
@@ -64,8 +67,8 @@ public class RedisInstanceOutput implements RedisOutput {
                 }
             }
         }
-
-        pipeline.zadd(database+":"+"location:localDate",Long.valueOf(lineMetaData), primaryKey);
+        pipeline.zadd(database+":"+"location:"+dateFieldName,Long.valueOf(lineMetaData.split(":")[0]), primaryKey);
+        pipeline.zadd(database+":"+"location",Long.valueOf(lineMetaData.split(":")[1]), primaryKey);
 
         pipeline.sadd(database+":"+"primaryKeys",primaryKey);
         pipeline.hset(primaryKey, map);
