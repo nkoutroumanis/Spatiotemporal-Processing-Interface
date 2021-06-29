@@ -67,9 +67,7 @@ public class RedisInstanceOutput implements RedisOutput {
                 }
             }
         }
-        pipeline.zadd(database+":"+"location:"+dateFieldName,Long.valueOf(lineMetaData.split(":")[0]), primaryKey);
-        pipeline.zadd(database+":"+"location",Long.valueOf(lineMetaData.split(":")[1]), primaryKey);
-
+        pipeline.zadd(database+":"+"location:"+dateFieldName,Long.valueOf(lineMetaData), primaryKey);
         pipeline.sadd(database+":"+"primaryKeys",primaryKey);
         pipeline.hset(primaryKey, map);
 

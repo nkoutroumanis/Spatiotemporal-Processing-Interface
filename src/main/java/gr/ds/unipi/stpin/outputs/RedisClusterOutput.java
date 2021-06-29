@@ -141,8 +141,7 @@ public class RedisClusterOutput implements RedisOutput {
 
         //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
 
-        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData.split(":")[0]), primaryKey);
-        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData.split(":")[1]), primaryKey);
+        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData), primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"primaryKeys"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().hset(primaryKey, map);
 
