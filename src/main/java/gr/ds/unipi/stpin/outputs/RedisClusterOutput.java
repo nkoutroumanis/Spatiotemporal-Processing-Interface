@@ -92,6 +92,7 @@ public class RedisClusterOutput implements RedisOutput {
 //        double longitude =0;
 //        double latitude =0;
 
+        String dateFieldName = "";
         for (int i = 0; i < fieldNames.size(); i++) {
 
             if(!(fieldNames.get(i).equals("longitude") || fieldNames.get(i).equals("latitude") || fieldNames.get(i).equals("localDate") || fieldNames.get(i).equals("vehicle"))){
@@ -115,6 +116,7 @@ public class RedisClusterOutput implements RedisOutput {
                 //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
             }
             else if(fieldValues.get(i) instanceof Date){
+                dateFieldName = fieldNames.get(i);
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
                 //pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
 
@@ -139,7 +141,8 @@ public class RedisClusterOutput implements RedisOutput {
 
         //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
 
-        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:localDate"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData), primaryKey);
+        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData.split(":")[0]), primaryKey);
+        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData.split(":")[1]), primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"primaryKeys"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().hset(primaryKey, map);
 
