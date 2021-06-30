@@ -27,7 +27,11 @@ public class RedisClusterOutput implements RedisOutput {
     private final List<Map.Entry<String, Pipeline>> pipelinesOfNodes;
     private int indexOfPipeline = 0;
 
-    public RedisClusterOutput(String host, int port, String database, int batchSize) {
+    private final boolean indexes;
+    private final boolean spatialIndex;
+    private final boolean spatiotemporalIndex;
+
+    public RedisClusterOutput(String host, int port, String database, int batchSize, boolean indexes, boolean spatialIndex, boolean spatiotemporalIndex) {
 
         Set<HostAndPort> nodes = new HashSet<>();
         nodes.add(new HostAndPort(host,port));
@@ -35,6 +39,10 @@ public class RedisClusterOutput implements RedisOutput {
         this.jedisCluster =  RedisClusterConnector.newRedisClusterConnector(nodes).getJedisCluster();
         this.batchSize = batchSize;
         this.database = database;
+
+        this.indexes = indexes;
+        this.spatialIndex = spatialIndex;
+        this.spatiotemporalIndex = spatiotemporalIndex;
 
         //nodeMap = jedisCluster.getClusterNodes();
 
@@ -101,8 +109,9 @@ public class RedisClusterOutput implements RedisOutput {
 
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                //pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)fieldValues.get(i),primaryKey);
-
+                if(indexes) {
+                    pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)fieldValues.get(i),primaryKey);
+                }
                 //for baseline
 //                if(fieldNames.get(i).equals("longitude")){
 //                    longitude = (double) fieldValues.get(i);
@@ -113,19 +122,24 @@ public class RedisClusterOutput implements RedisOutput {
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                if(indexes) {
+                    pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                }
             }
             else if(fieldValues.get(i) instanceof Date){
                 dateFieldName = fieldNames.get(i);
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
-                //pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
-
+                if(indexes) {
+                    pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+fieldNames.get(i)+pipelinesOfNodes.get(indexOfPipeline).getKey(),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                }
                 //for baseline
 //                pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"localDate"+pipelinesOfNodes.get(indexOfPipeline).getKey(), ((Date) fieldValues.get(i)).getTime(), primaryKey);
             }
             else if(fieldValues.get(i)==null){
                 map.put(fieldNames.get(i),"Null");
-                //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+"Null"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                if(indexes) {
+                    pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+fieldNames.get(i)+":"+"Null"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
+                }
             }
             else{
                 try {
@@ -138,10 +152,17 @@ public class RedisClusterOutput implements RedisOutput {
 
         //for baseline
         //pipelinesOfNodes.get(indexOfPipeline).getValue().geoadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),longitude,latitude, primaryKey);
-
         //pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),lineMetaData + "-" + primaryKey);
 
-        pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.valueOf(lineMetaData), primaryKey);
+        String[] lineMetaDataArray = lineMetaData.split(":");
+
+        if(spatialIndex){
+            pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.parseLong(lineMetaDataArray[0]), primaryKey);
+        }
+        if(spatiotemporalIndex){
+            pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.parseLong(lineMetaDataArray[1]), primaryKey);
+        }
+
         pipelinesOfNodes.get(indexOfPipeline).getValue().sadd(database+":"+"primaryKeys"+pipelinesOfNodes.get(indexOfPipeline).getKey(),primaryKey);
         pipelinesOfNodes.get(indexOfPipeline).getValue().hset(primaryKey, map);
 
@@ -219,4 +240,5 @@ public class RedisClusterOutput implements RedisOutput {
 
     private static List<String> crc16Slot = new BufferedReader(new InputStreamReader(RedisConnector.class.getResourceAsStream("/codes.txt"))).lines().collect(Collectors.toList());
 
+    public boolean hasSpatialIndex(){return spatialIndex;}
 }

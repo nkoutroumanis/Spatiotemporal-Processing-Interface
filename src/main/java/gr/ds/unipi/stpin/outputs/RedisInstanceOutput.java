@@ -21,11 +21,18 @@ public class RedisInstanceOutput implements RedisOutput {
     private int count = 0;
     private final String database;
 
-    public RedisInstanceOutput(String host, int port, String database, int batchSize) {
+    private final boolean indexes;
+    private final boolean spatialIndex;
+    private final boolean spatiotemporalIndex;
+
+    public RedisInstanceOutput(String host, int port, String database, int batchSize, boolean indexes, boolean spatialIndex, boolean spatiotemporalIndex) {
         this.pool =  RedisConnector.newRedisConnector(host, port, database).getPool();
         this.pipeline = pool.getResource().pipelined();
         this.batchSize = batchSize;
         this.database = database;
+        this.indexes = indexes;
+        this.spatialIndex = spatialIndex;
+        this.spatiotemporalIndex = spatiotemporalIndex;
     }
 
     @Override
@@ -44,20 +51,28 @@ public class RedisInstanceOutput implements RedisOutput {
 
             if(fieldValues.get(i) instanceof Number){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                pipeline.zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
+                if(indexes) {
+                    pipeline.zadd(database+":"+fieldNames.get(i),(double)fieldValues.get(i),primaryKey);
+                }
             }
             else if(fieldValues.get(i) instanceof String){
                 map.put(fieldNames.get(i),String.valueOf(fieldValues.get(i)));
-                pipeline.sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
+                if(indexes) {
+                    pipeline.sadd(database+":"+fieldNames.get(i)+":"+fieldValues.get(i),primaryKey);
+                }
             }
             else if(fieldValues.get(i) instanceof Date){
                 dateFieldName = fieldNames.get(i);
                 map.put(fieldNames.get(i),String.valueOf(((Date) fieldValues.get(i)).getTime()));
-                pipeline.zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                if(indexes){
+                    pipeline.zadd(database+":"+fieldNames.get(i),(double)((Date) fieldValues.get(i)).getTime(),primaryKey);
+                }
             }
             else if(fieldValues.get(i)==null){
                 map.put(fieldNames.get(i),"Null");
-                pipeline.sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
+                if(indexes) {
+                    pipeline.sadd(database+":"+fieldNames.get(i)+":"+"Null",primaryKey);
+                }
             }
             else{
                 try {
@@ -67,7 +82,15 @@ public class RedisInstanceOutput implements RedisOutput {
                 }
             }
         }
-        pipeline.zadd(database+":"+"location:"+dateFieldName,Long.valueOf(lineMetaData), primaryKey);
+
+        String[] lineMetaDataArray = lineMetaData.split(":");
+
+        if(spatialIndex){
+            pipeline.zadd(database+":"+"location:",Long.parseLong(lineMetaDataArray[0]), primaryKey);
+        }
+        if(spatiotemporalIndex){
+            pipeline.zadd(database+":"+"location:"+dateFieldName,Long.parseLong(lineMetaDataArray[1]), primaryKey);
+        }
         pipeline.sadd(database+":"+"primaryKeys",primaryKey);
         pipeline.hset(primaryKey, map);
 
@@ -85,5 +108,9 @@ public class RedisInstanceOutput implements RedisOutput {
         pipeline.sync();
         pipeline.close();
         pool.close();
+    }
+
+    public boolean hasSpatialIndex() {
+        return spatialIndex;
     }
 }

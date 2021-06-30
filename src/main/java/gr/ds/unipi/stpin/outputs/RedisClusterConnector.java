@@ -1,6 +1,5 @@
 package gr.ds.unipi.stpin.outputs;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
