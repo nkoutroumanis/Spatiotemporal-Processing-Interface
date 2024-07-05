@@ -140,7 +140,9 @@ public class CsvRecordParser extends RecordParser {
     public String toDefaultOutputFormat(Record record) {
         return toCsv(record, ";");
     }
-
+    public String getSeparator() {
+        return separator;
+    }
     @Override
     public RecordParser cloneRecordParser(Datasource source) {
         return new CsvRecordParser(source, separator, headers, vehicleFieldId, longitudeFieldId, latitudeFieldId, dateFieldId, dateFormat);

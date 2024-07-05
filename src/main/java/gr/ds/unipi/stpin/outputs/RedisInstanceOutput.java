@@ -86,7 +86,7 @@ public class RedisInstanceOutput implements RedisOutput {
         String[] lineMetaDataArray = lineMetaData.split(":");
 
         if(spatialIndex){
-            pipeline.zadd(database+":"+"location:",Long.parseLong(lineMetaDataArray[0]), primaryKey);
+            pipeline.zadd(database+":"+"location",Long.parseLong(lineMetaDataArray[0]), primaryKey);
         }
         if(spatiotemporalIndex){
             pipeline.zadd(database+":"+"location:"+dateFieldName,Long.parseLong(lineMetaDataArray[1]), primaryKey);

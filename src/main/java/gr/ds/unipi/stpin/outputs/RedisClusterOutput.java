@@ -157,7 +157,7 @@ public class RedisClusterOutput implements RedisOutput {
         String[] lineMetaDataArray = lineMetaData.split(":");
 
         if(spatialIndex){
-            pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.parseLong(lineMetaDataArray[0]), primaryKey);
+            pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location"+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.parseLong(lineMetaDataArray[0]), primaryKey);
         }
         if(spatiotemporalIndex){
             pipelinesOfNodes.get(indexOfPipeline).getValue().zadd(database+":"+"location:"+dateFieldName+pipelinesOfNodes.get(indexOfPipeline).getKey(),Long.parseLong(lineMetaDataArray[1]), primaryKey);
